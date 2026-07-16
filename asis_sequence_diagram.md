@@ -1,0 +1,54 @@
+# Диаграмма последовательности AS-IS (Accidental Black Friday)
+
+Ниже представлена визуализация текущего потока данных во времени без учета ошибок или защитных проверок (строго по текстовому описанию из задания).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Пользователь (User)
+    participant Vendor as Vendor Cost Price Feed
+    participant PriceEngine as Base Retail Price Engine
+    participant PromoCoordinator as PROMOTION COORDINATOR
+    participant Pipeline as Publishing Pipeline Trigger
+    participant Storefront as STOREFRONT LIVE
+    participant Checkout as CHECKOUT CART MATRIX APPLIED
+
+    %% Процесс обновления цен на витрине
+    Vendor->>PriceEngine: Передача себестоимости (Cost Price Feed)
+    PriceEngine->>PromoCoordinator: Расчет розничной цены и передача в модуль промо
+    PromoCoordinator->>Pipeline: Генерация и публикация правил скидок (Discount Rules Published)
+    Pipeline->>Storefront: Триггер публикации цен на витрину (Publishing Pipeline Trigger)
+    
+    Note over User: Пользователь заходит на витрину (Storefront Live)
+    
+    %% Процесс совершения покупки пользователем
+    User->>Storefront: Запрос страницы товара (открытие карточки)
+    activate Storefront
+    Storefront-->>User: Ответ: отображение страницы с ценой $1
+    deactivate Storefront
+    
+    User->>Storefront: Отправка команды "Добавить в корзину" (Adds Goods to Basket)
+    activate Storefront
+    Storefront-->>User: Ответ: товар добавлен в корзину
+    deactivate Storefront
+    
+    User->>Checkout: Запрос на оформление заказа (Checkout)
+    activate Checkout
+    Checkout->>Checkout: Применяет матрицу скидок (Cart Matrix Applied)
+    Checkout-->>User: Ответ: подтверждает покупку за $1 (Финансовый инцидент)
+    deactivate Checkout
+```
+
+### Легенда: связь с оригинальным текстом задания
+В исходном задании цепочка AS-IS описана не действиями, а набором сущностей и состояний: `[Vendor Cost Price Feed] -> [Base Retail Price Engine] -> ...`
+Вот как этот текст перекладывается на шаги (номера стрелок) нашей диаграммы:
+
+* `[Vendor Cost Price Feed]` ➡️ **Шаг 1**: Поставщик выгружает данные о себестоимости.
+* `[Base Retail Price Engine]` ➡️ **Шаг 2**: Движок принимает данные и считает розничную цену.
+* `[PROMOTION COORDINATOR]` ➡️ **Шаги 2-3**: Модуль промо получает цену и подготавливает скидки.
+* `[Discount Rules Published]` ➡️ **Шаг 3**: Сформированные правила скидок публикуются в пайплайн.
+* `[Publishing Pipeline Trigger]` ➡️ **Шаг 4**: Пайплайн обновляет цены на живой витрине.
+* `[STOREFRONT LIVE]` ➡️ **Шаги 5-6**: Состояние витрины (пользователь видит ошибочную цену $1).
+* `[USER ADDS GOODS TO BASKET]` ➡️ **Шаги 7-8**: Пользователь добавляет товар в корзину на витрине.
+* `[CHECKOUT CART MATRIX APPLIED]` ➡️ **Шаги 9-10**: Сервис чекаута принимает запрос и применяет внутренние алгоритмы скидок.
+* `[FINANCIAL INCIDENT]` ➡️ **Шаг 11**: Успешное завершение ошибочной оплаты, возвращение чека пользователю.
