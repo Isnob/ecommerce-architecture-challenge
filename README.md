@@ -81,12 +81,18 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
+    participant Feed as [Vendor Cost Price Feed]
+    participant Engine as [Base Retail Price Engine]
     participant Promo as [PROMOTION COORDINATOR]
     participant Pipeline as [Publishing Pipeline Trigger]
     participant SF as [STOREFRONT LIVE]
     actor User as Пользователь
     participant Cart as [CHECKOUT CART MATRIX]
     participant Val as Validation Layer (Circuit Breaker)
+
+    Note over Feed, Promo: Обновление базовых цен
+    Feed->>Engine: Данные от [Vendor Cost Price Feed]
+    Engine->>Promo: Данные от [Base Retail Price Engine]
 
     Note over Promo, Pipeline: Конец распродажи
     Promo->>Pipeline: [Discount Rules Published] (Версия v2)
@@ -130,6 +136,9 @@ sequenceDiagram
     actor User as Пользователь
     participant Cart as [CHECKOUT CART MATRIX]
     participant Val as Validation Layer (Circuit Breaker)
+
+    Note over Feed, Engine: Обновление базовых цен
+    Feed->>Engine: Данные от [Vendor Cost Price Feed]
 
     Note over Engine, Promo: Этап 1: Блокировка ошибки у источника (Shift-Left)
     Promo->>Engine: Менеджер ставит цену $1. Запрос себестоимости.
